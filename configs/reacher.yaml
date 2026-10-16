@@ -1,0 +1,12 @@
+# Adapted from LeWorldModel (LeWM); MIT License, see LICENSES/LeWM-LICENSE.
+dataset: reacher
+keys_to_cache: [action]
+world:
+  env_name: swm/ReacherDMControl-v0
+  task: qpos_match
+n_steps: 10
+callables:
+  - method: set_state
+    args: {qpos: {value: qpos}, qvel: {value: qvel}}
+  - method: set_target_qpos
+    args: {target_qpos: {value: goal_qpos}}

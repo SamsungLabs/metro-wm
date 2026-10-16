@@ -1,0 +1,16 @@
+This repository contains code derived from the following projects, each under the MIT License.
+Their license texts are in LICENSES/.
+
+LeWorldModel (https://github.com/lucas-maes/le-wm), Copyright (c) 2026 Lucas Maes
+  - jepa.py, module.py: the LeWM / PLDM model classes (reduced to inference).
+  - scripts/convert_lewm.py: builds the model from the released Hugging Face weights.
+  - eval.py, metro/episodes.py: evaluation harness and episode sampling adapted from LeWM's eval.py.
+  - configs/*.yaml: environment, dataset and planner settings from LeWM's config/eval/*.yaml.
+  License: LICENSES/LeWM-LICENSE
+
+stable-worldmodel (https://github.com/galilai-group/stable-worldmodel), Copyright (c) 2025 AI.QED Group @ Brown
+  - metro/swm_patches.py: runtime overrides of stable-worldmodel 0.0.5 functions; the Reacher
+    `qpos_match` task it adds is back-ported from later upstream releases.
+  - metro/policy.py: subclasses stable_worldmodel.policy.BasePolicy; its receding-horizon action
+    buffer (set_env / get_action) is adapted from stable_worldmodel.policy.WorldModelPolicy.
+  License: LICENSES/stable-worldmodel-LICENSE

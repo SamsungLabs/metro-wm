@@ -1,0 +1,190 @@
+# Metro-WM: Long-Horizon Latent Planning with Realisable Sub-Goals
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2609.31868">Paper (arXiv:2609.31868)</a> | <a href="#citation">Citation</a>
+</p>
+
+<p align="center">
+  <img src="assets/pusht_example.gif" width="100%" alt="PushT: LeWM and Hi-LeWM-C miss the goal, Metro-LeWM reaches it">
+</p>
+
+<details>
+<summary>More examples</summary>
+
+<p align="center">
+  <img src="assets/cube_example.gif" width="100%" alt="Cube: LeWM and Hi-LeWM-C miss the goal, Metro-LeWM reaches it">
+  <img src="assets/reacher_example.gif" width="100%" alt="Reacher: LeWM and Hi-LeWM-C miss the goal, Metro-LeWM reaches it">
+  <img src="assets/tworoom_example.gif" width="100%" alt="TwoRoom: LeWM and Hi-LeWM-C miss the goal, Metro-LeWM reaches it">
+</p>
+
+</details>
+
+Metro-WM is a hierarchical planner for JEPA world models. Instead of generating latent sub-goals, which are often physically unrealisable, it retrieves real frames from offline data as sub-goals. It does this by routing over a graph of recorded frames that stitches episodes together.
+
+<details>
+<summary>Abstract</summary>
+
+Model-predictive control with Joint-Embedding Predictive Architectures (JEPAs) provides a strong zero-shot goal-reaching planner, but it is only effective over short planning horizons. Hierarchical extensions attempt to bridge this gap by learning a macro planner to predict intermediate latent sub-goals to guide the micro planner. In this work, we demonstrate that unconstrained latent sub-goal prediction is fundamentally flawed. A rigorous evaluation reveals that a leading state-of-the-art macro planner routinely emits physically unrealisable sub-goals. To resolve this, we introduce Metro-WM, a hierarchical framework that issues sub-goals by retrieving genuine states from prior experience rather than generating ungrounded latent vectors. Specifically, Metro-WM constructs a graph whose vertices are observed frames from offline expert demonstrations or random-action trajectories, allowing frames from different episodes to be connected and stitched into routes to the goal. Planning over the full graph also makes the system highly robust to execution errors: if the micro planner drifts off course, Metro-WM instantly finds a new optimal path from the current state. Our experiments show that Metro-WM achieves superior long-horizon success rates of up to 37.33 percentage points over the next best hierarchical approach while being up to 10.9 times faster, requiring both 13-56 times less offline compute and fewer tuned hyperparameters. Additional analysis reveals that Metro-WM finds shorter paths than the offline demonstrations, outperforms an oracle relying on the query's own demonstration, and maintains robust performance under extremely sparse dataset conditions.
+
+</details>
+
+<p align="center">
+  <img src="assets/overview.gif" width="100%" alt="One Metro-WM planning cycle on a graph of recorded frames">
+</p>
+
+Every recorded frame is a vertex. Directed temporal edges (solid grey) connect consecutive frames within each episode, while symmetric bridge edges (dashed grey) link visually similar frames across episodes. Metro-WM routes over this map from the current observation to the goal and hands the micro planner the farthest vertex within reach.
+
+What a bridge looks like in pixels: when a route crosses one, it leaves a demonstration (blue) and continues along another (red).
+
+<p align="center">
+  <img src="assets/bridge_in_pixels.png" width="100%" alt="On each benchmark, a route runs along one demonstration (blue), crosses a bridge, and continues along another (red)">
+</p>
+
+## 1. Installation
+
+Tested with Python 3.10 and CUDA 12.1.
+
+```bash
+python3.10 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+pip uninstall -y pygame-ce pygame && pip install --no-deps pygame==2.6.1
+```
+
+## 2. Data and models
+
+```bash
+export STABLEWM_HOME=/path/to/storage
+export MUJOCO_GL=egl
+```
+
+All datasets and models are downloaded directly from [LeWM](https://github.com/lucas-maes/le-wm).
+
+### Datasets
+
+From Hugging Face ([quentinll/lewm](https://huggingface.co/collections/quentinll/lewm)):
+
+```bash
+cd $STABLEWM_HOME
+HF=https://huggingface.co/datasets/quentinll
+curl -L -o pusht_expert_train.h5.zst $HF/lewm-pusht/resolve/main/pusht_expert_train.h5.zst
+zstd -d --rm pusht_expert_train.h5.zst
+curl -L $HF/lewm-tworooms/resolve/main/tworoom.tar.zst | tar --zstd -xf -
+curl -L $HF/lewm-reacher/resolve/main/reacher.tar.zst | tar --zstd -xf -
+mkdir -p ogbench && curl -L $HF/lewm-cube/resolve/main/cube_single_expert.tar.zst | tar --zstd -xf - -C ogbench
+```
+
+### LeWM
+
+Download the released weights from Hugging Face and convert them to the object checkpoint format
+used by stable-worldmodel.
+
+```bash
+for b in pusht cube tworoom reacher; do
+  repo=lewm-$b; [ $b = tworoom ] && repo=lewm-tworooms
+  hf download quentinll/$repo --local-dir checkpoints/$repo
+  python scripts/convert_lewm.py --bench $b --hf_dir checkpoints/$repo
+done
+```
+
+### PLDM (weights currently unavailable)
+
+The PLDM checkpoints were released by the LeWM authors in a
+[Google Drive folder](https://drive.google.com/drive/folders/1r31os0d4-rR0mdHc7OlY_e5nh3XT4r4e)
+that is no longer available. Until they are re-hosted, please
+contact the LeWM authors through the
+[LeWM issue tracker](https://github.com/lucas-maes/le-wm/issues).
+
+Our PLDM results use these four archives from that folder; check any copy against them:
+
+| benchmark | file in the Drive folder | SHA-256 |
+|---|---|---|
+| PushT | `pusht/ckpt/pldm.tar.zst` | `05cb7863e8cdef2c80abd0790366a1a0b191345a3f24ad364d719016918ccec5` |
+| Cube | `ogbench/cube/ckpt/pldm.tar.zst` | `24f66071f7370ffa63dd064f87021d3a57177298742b8fe3bd5f11bf4260e1ef` |
+| TwoRoom | `two-room/ckpt/pldm.tar.zst` | `ed6d44b3957fb4964c1cffc3db783d744d3a35c6bb02b018b0cdc62b81f3ef3a` |
+| Reacher | `reacher/ckpt/pldm.tar.zst` | `0daf036bcb287b64e8887651dc447cbe91e7fd448ac4f399739bc7d0401aa8d4` |
+
+
+Resulting layout (the `pldm_object.ckpt` files only if you have the PLDM archives):
+
+```
+$STABLEWM_HOME/
+├── pusht_expert_train.h5
+├── tworoom.h5
+├── reacher.h5
+├── ogbench/cube_single_expert.h5
+├── pusht/    lewm_object.ckpt  pldm_object.ckpt
+├── cube/     lewm_object.ckpt  pldm_object.ckpt
+├── tworoom/  lewm_object.ckpt  pldm_object.ckpt
+└── reacher/  lewm_object.ckpt  pldm_object.ckpt
+```
+
+## 3. Building the graph
+
+The graph is built offline, once per world model and benchmark.
+
+```bash
+# LeWM on all 4 benchmarks, one per GPU
+./scripts/build_artifacts.sh
+# if you have PLDM checkpoints, you can build both LeWM and PLDM on all benchmarks
+WMS="lewm pldm" ./scripts/build_artifacts.sh
+# script also works for a specific model and benchmark pair
+./scripts/build_artifacts.sh lewm pusht
+```
+
+For each pair this runs three steps and writes to `artifacts/<wm>/<bench>/`:
+
+1. `scripts/build_bank.py` encodes every frame of the dataset with the frozen encoder.
+   - `bank_z.npy`: the latent of each frame (the graph's vertices).
+   - `bank_ep.npy`, `bank_st.npy`: the episode and step each frame comes from.
+2. `scripts/build_jump_table.py` finds, for every frame, its 4 nearest frames in other episodes.
+   - `jump_idx.npy`, `jump_dist.npy`: their indices and latent distances, nearest first.
+3. `scripts/calibrate_edge_cost.py` calibrates how a latent distance converts into frames.
+   - `edge_cost.npz`: the latent distance between two frames used to price the bridge edges.
+
+## 4. Running Metro-WM
+
+`h` is the micro planner horizon, `H` the waypoint budget, `T` the episode budget and `d` the goal offset distance (see the paper).
+
+```bash
+# Metro-LeWM on PushT, d=75 (best result in the paper)
+d=75
+for rs in 7 8 9; do
+  python eval.py --wm lewm --bench pusht --d $d --h 5 --H 28 --T $((4 * d)) --run_seed $rs
+done
+```
+
+Each run appends a row to `results/results.jsonl` with the per-episode outcomes, the frame of first success and the wall clock.
+To visualise the results, add `--save_video`.
+
+For convenience, we provide a script `reproduce.sh` to reproduce all Metro-WM results:
+
+```bash
+# Metro-LeWM only for d=75, the highest-budget cell of each benchmark's frontier
+./reproduce.sh
+# Metro-LeWM and Metro-PLDM for d=75, the highest-budget cell of each benchmark's frontier
+WMS="lewm pldm" ./reproduce.sh
+# every (h,H) cell of Metro-LeWM's pareto frontier for all d, as shown in Figure 3 of the paper
+# it reads off `configs/frontier.txt` from Appendix G.4 of the paper
+FRONTIER=1 D="25 50 75" ./reproduce.sh
+```
+
+Note that each cell runs once at the maximum budget `T = 4d`, and the success rate at every smaller budget on the frontier is read off that run.
+`reproduce.sh` prints these success rates when it finishes; to print them again from `results/results.jsonl`, run `python summarize.py` (or `python summarize.py --d 75` for d=75).
+
+## Citation
+
+```bibtex
+@misc{lee2026metrowm,
+      title={Metro-WM: Long-Horizon Latent Planning with Realisable Sub-Goals},
+      author={Royson Lee and Fady Rezk and Titouan Parcollet and Timothy Hospedales and Cristina Cornelio},
+      year={2026},
+      eprint={2609.31868},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2609.31868},
+}
+```
+
+## Credits
+
+This codebase is built on top of [LeWorldModel](https://github.com/lucas-maes/le-wm) and [stable-worldmodel](https://github.com/galilai-group/stable-worldmodel); both are MIT licensed. For further information, see `NOTICE` and `LICENSES/`.

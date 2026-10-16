@@ -1,0 +1,11 @@
+# Adapted from LeWorldModel (LeWM); MIT License, see LICENSES/LeWM-LICENSE.
+dataset: tworoom
+keys_to_cache: [action, proprio]
+world:
+  env_name: swm/TwoRoom-v1
+n_steps: 10
+callables:
+  - method: _set_state
+    args: {state: {value: proprio}}
+  - method: _set_goal_state
+    args: {goal_state: {value: goal_proprio}}

@@ -40,7 +40,7 @@ To reproduce, see the [H-JEPA setup](docs/hjepa_setup.md).
 
 ### Comparisons with Hi-LeWM and Hi-LeWM-C (CEM planner)
 
-We adopt the setup of [LeWM](https://github.com/lucas-maes/le-wm), Metro-WM guides LeWM's CEM planner and beats flat LeWM and the three hierarchical [Hi-LeWM](https://arxiv.org/abs/2607.12547) baselines on all four benchmarks.
+In the setup of [LeWM](https://github.com/lucas-maes/le-wm), Metro-WM guides LeWM's CEM planner and beats flat LeWM and the three hierarchical [Hi-LeWM](https://arxiv.org/abs/2607.12547) baselines on all four benchmarks.
 Success at goal distance 75 frames, mean ± standard deviation over 3 planner seeds 7/8/9.
 To reproduce, see the [LeWM setup](docs/lewm_setup.md).
 

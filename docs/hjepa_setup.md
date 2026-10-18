@@ -47,7 +47,7 @@ mkdir -p ogbench && curl -L $HF/lewm-cube/resolve/main/cube_single_expert.tar.zs
 
 ### H-JEPA's LeWM
 
-Note that these weights differ from the original LeWM weights. Download H-JEPA's flat LeWMs weights:
+Note that these weights differ from the original LeWM weights. Download H-JEPA's flat LeWM weights:
 
 ```bash
 hf download jepa-world-models/h-jepa --local-dir $HJEPA_HOME/ckpts --include "*_lewm/*"
@@ -87,7 +87,7 @@ For each pair this runs three steps and writes to `artifacts/hj_lewm_s<seed>/<be
    - `bank_ep.npy`, `bank_st.npy`: the episode and step each frame comes from.
 2. `scripts/build_jump_table.py` finds, for every frame, its 4 nearest frames in other episodes.
    - `jump_idx.npy`, `jump_dist.npy`: their indices and latent distances, nearest first.
-3. `scripts/calibrate_edge_cost.py` calibrates how a latent distance converts into frames
+3. `scripts/calibrate_edge_cost.py` calibrates how a latent distance converts into frames.
    - `edge_cost.npz`: the latent distance between two frames used to price the bridge edges.
 
 ## 4. Running Metro-WM

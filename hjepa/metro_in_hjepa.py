@@ -157,10 +157,13 @@ def run(cfg: DictConfig):
     assert "metro" in cfg, "pass +metro.artifacts=<graph dir> +metro.H=<waypoint budget>"
     assert "GradientSolver" in cfg.solver._target_, "Metro replaces the goal of H-JEPA's flat planner: use a *_flat config"
     overridden = {o.split("=")[0].lstrip("+~") for o in HydraConfig.get().overrides.task}
+    assert "plan_config.horizon" in overridden, "pass plan_config.horizon=<h>: the *_flat default is H-JEPA's, not Metro's"
     if "plan_config.receding_horizon" not in overridden:
         cfg.plan_config.receding_horizon = 1                    # replan after every action block
     planning_eval.run_planning_eval(cfg)
-    print("metro sub-goal reasons:", json.dumps(dict(build_metro_policy.last.reasons)))
+    policy = getattr(build_metro_policy, "last", None)          # not built when every task chunk already exists
+    if policy is not None:
+        print("metro sub-goal reasons:", json.dumps(dict(policy.reasons)))
 
 
 if __name__ == "__main__":

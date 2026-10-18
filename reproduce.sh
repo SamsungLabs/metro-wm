@@ -7,7 +7,7 @@
 #   D="25 50 75" ./reproduce.sh             # these goal distances
 #   FRONTIER=1 ./reproduce.sh               # every (h, H) cell of the frontier, not just the highest
 #   ./reproduce.sh pusht cube               # only these benchmarks
-#   WMS="lewm pldm" ./reproduce.sh          # also Metro-PLDM (needs its weights, see README)
+#   WMS="lewm pldm" ./reproduce.sh          # also Metro-PLDM (needs its weights, see docs/lewm_setup.md)
 #   GPUS="0 1" ./reproduce.sh
 set -euo pipefail
 cd "$(dirname "$0")"

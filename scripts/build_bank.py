@@ -25,11 +25,13 @@ REPO = Path(__file__).resolve().parent.parent
 @torch.no_grad()
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--wm", default="lewm", choices=["lewm", "pldm"])
+    ap.add_argument("--wm", default="lewm", help="checkpoint $STABLEWM_HOME/<bench>/<wm>_object.ckpt")
     ap.add_argument("--bench", required=True, choices=["pusht", "cube", "tworoom", "reacher"])
     ap.add_argument("--artifacts", default=str(REPO / "artifacts"))
     ap.add_argument("--batch_size", type=int, default=256)
     ap.add_argument("--num_workers", type=int, default=16)
+    ap.add_argument("--max_episode", type=int, default=None,
+                    help="keep only episodes with a smaller id (9800: H-JEPA's Cube training split)")
     a = ap.parse_args()
     cfg = yaml.safe_load((REPO / "configs" / f"{a.bench}.yaml").read_text())
     out = Path(a.artifacts) / a.wm / a.bench
@@ -54,10 +56,12 @@ def main():
     key = ep.astype(np.int64) * 100_000 + st.astype(np.int64)
     _, keep = np.unique(key, return_index=True)
     keep.sort()
+    if a.max_episode is not None:
+        keep = keep[ep[keep] < a.max_episode]
     np.save(out / "bank_z.npy", z[keep])
     np.save(out / "bank_ep.npy", ep[keep])
     np.save(out / "bank_st.npy", st[keep])
-    print(f"wrote {out}: {len(keep)} frames from {len(np.unique(ep))} episodes "
+    print(f"wrote {out}: {len(keep)} frames from {len(np.unique(ep[keep]))} episodes "
           f"in {(time.time() - t0) / 60:.1f} min")
 
 

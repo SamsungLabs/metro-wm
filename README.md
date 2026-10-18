@@ -4,6 +4,50 @@
   <a href="https://arxiv.org/abs/2609.31868">Paper (arXiv:2609.31868)</a> | <a href="#citation">Citation</a>
 </p>
 
+Metro-WM is a hierarchical planner for JEPA world models. Instead of generating latent sub-goals, which are often physically unrealisable, it retrieves real frames from offline data as sub-goals. It does this by routing over a graph of recorded frames that stitches episodes together.
+
+## News
+
+- **18 Oct 2026**: Added [comparisons with H-JEPA and HWM](#comparisons-with-h-jepa-and-hwm-gradient-planner) in their evaluation setup. We will update the paper soon.
+- **16 Oct 2026**: Code released.
+- **25 Sep 2026**: Paper released on [arXiv](https://arxiv.org/abs/2609.31868).
+
+## Results
+
+### Comparisons with H-JEPA and HWM (Gradient planner)
+
+In the setup of [H-JEPA](https://github.com/kevinghst/H-JEPA) (their checkpoints, gradient-descent planner, tasks and evaluation code), Metro-WM guides their flat LeWM and achieves the highest mean success on all four benchmarks. Mean ± standard error over H-JEPA's model seeds 42/43/44.
+To reproduce, see the [H-JEPA setup](docs/hjepa_setup.md).
+
+<p align="center">
+  <img src="assets/hjepa_success.png" width="100%" alt="Success rates on H-JEPA's four benchmarks: LeWM, H-JEPA and HWM at depths 2-4, and Metro">
+</p>
+
+<p align="center">
+  <img src="assets/hjepa_ant_example.gif" width="100%" alt="Visual AntMaze: HWM 2 and H-JEPA 3 miss the goal, Metro-LeWM reaches it">
+</p>
+
+<details>
+<summary>More examples</summary>
+
+<p align="center">
+  <img src="assets/hjepa_pusht_example.gif" width="100%" alt="Push-T: HWM 2 and H-JEPA 2 miss the goal, Metro-LeWM reaches it">
+  <img src="assets/hjepa_fourroom_example.gif" width="100%" alt="FourRoom: HWM 3 and H-JEPA 3 miss the goal, Metro-LeWM reaches it">
+</p>
+
+</details>
+
+
+### Comparisons with Hi-LeWM and Hi-LeWM-C (CEM planner)
+
+We adopt the setup of [LeWM](https://github.com/lucas-maes/le-wm), Metro-WM guides LeWM's CEM planner and beats flat LeWM and the three hierarchical [Hi-LeWM](https://arxiv.org/abs/2607.12547) baselines on all four benchmarks.
+Success at goal distance 75 frames, mean ± standard deviation over 3 planner seeds 7/8/9.
+To reproduce, see the [LeWM setup](docs/lewm_setup.md).
+
+<p align="center">
+  <img src="assets/cem_success.png" width="100%" alt="Success rates at goal distance 75: LeWM, Hi-LeWM, Hi-LeWM-C, Hi-LeWM-C (staged) and Metro-LeWM">
+</p>
+
 <p align="center">
   <img src="assets/pusht_example.gif" width="100%" alt="PushT: LeWM and Hi-LeWM-C miss the goal, Metro-LeWM reaches it">
 </p>
@@ -19,7 +63,8 @@
 
 </details>
 
-Metro-WM is a hierarchical planner for JEPA world models. Instead of generating latent sub-goals, which are often physically unrealisable, it retrieves real frames from offline data as sub-goals. It does this by routing over a graph of recorded frames that stitches episodes together.
+
+## Method
 
 <details>
 <summary>Abstract</summary>
@@ -40,137 +85,6 @@ What a bridge looks like in pixels: when a route crosses one, it leaves a demons
   <img src="assets/bridge_in_pixels.png" width="100%" alt="On each benchmark, a route runs along one demonstration (blue), crosses a bridge, and continues along another (red)">
 </p>
 
-## 1. Installation
-
-Tested with Python 3.10 and CUDA 12.1.
-
-```bash
-python3.10 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-pip uninstall -y pygame-ce pygame && pip install --no-deps pygame==2.6.1
-```
-
-## 2. Data and models
-
-```bash
-export STABLEWM_HOME=/path/to/storage
-export MUJOCO_GL=egl
-```
-
-All datasets and models are downloaded directly from [LeWM](https://github.com/lucas-maes/le-wm).
-
-### Datasets
-
-From Hugging Face ([quentinll/lewm](https://huggingface.co/collections/quentinll/lewm)):
-
-```bash
-cd $STABLEWM_HOME
-HF=https://huggingface.co/datasets/quentinll
-curl -L -o pusht_expert_train.h5.zst $HF/lewm-pusht/resolve/main/pusht_expert_train.h5.zst
-zstd -d --rm pusht_expert_train.h5.zst
-curl -L $HF/lewm-tworooms/resolve/main/tworoom.tar.zst | tar --zstd -xf -
-curl -L $HF/lewm-reacher/resolve/main/reacher.tar.zst | tar --zstd -xf -
-mkdir -p ogbench && curl -L $HF/lewm-cube/resolve/main/cube_single_expert.tar.zst | tar --zstd -xf - -C ogbench
-```
-
-### LeWM
-
-Download the released weights from Hugging Face and convert them to the object checkpoint format
-used by stable-worldmodel.
-
-```bash
-for b in pusht cube tworoom reacher; do
-  repo=lewm-$b; [ $b = tworoom ] && repo=lewm-tworooms
-  hf download quentinll/$repo --local-dir checkpoints/$repo
-  python scripts/convert_lewm.py --bench $b --hf_dir checkpoints/$repo
-done
-```
-
-### PLDM (weights currently unavailable)
-
-The PLDM checkpoints were released by the LeWM authors in a
-[Google Drive folder](https://drive.google.com/drive/folders/1r31os0d4-rR0mdHc7OlY_e5nh3XT4r4e)
-that is no longer available. Until they are re-hosted, please
-contact the LeWM authors through the
-[LeWM issue tracker](https://github.com/lucas-maes/le-wm/issues).
-
-Our PLDM results use these four archives from that folder; check any copy against them:
-
-| benchmark | file in the Drive folder | SHA-256 |
-|---|---|---|
-| PushT | `pusht/ckpt/pldm.tar.zst` | `05cb7863e8cdef2c80abd0790366a1a0b191345a3f24ad364d719016918ccec5` |
-| Cube | `ogbench/cube/ckpt/pldm.tar.zst` | `24f66071f7370ffa63dd064f87021d3a57177298742b8fe3bd5f11bf4260e1ef` |
-| TwoRoom | `two-room/ckpt/pldm.tar.zst` | `ed6d44b3957fb4964c1cffc3db783d744d3a35c6bb02b018b0cdc62b81f3ef3a` |
-| Reacher | `reacher/ckpt/pldm.tar.zst` | `0daf036bcb287b64e8887651dc447cbe91e7fd448ac4f399739bc7d0401aa8d4` |
-
-
-Resulting layout (the `pldm_object.ckpt` files only if you have the PLDM archives):
-
-```
-$STABLEWM_HOME/
-├── pusht_expert_train.h5
-├── tworoom.h5
-├── reacher.h5
-├── ogbench/cube_single_expert.h5
-├── pusht/    lewm_object.ckpt  pldm_object.ckpt
-├── cube/     lewm_object.ckpt  pldm_object.ckpt
-├── tworoom/  lewm_object.ckpt  pldm_object.ckpt
-└── reacher/  lewm_object.ckpt  pldm_object.ckpt
-```
-
-## 3. Building the graph
-
-The graph is built offline, once per world model and benchmark.
-
-```bash
-# LeWM on all 4 benchmarks, one per GPU
-./scripts/build_artifacts.sh
-# if you have PLDM checkpoints, you can build both LeWM and PLDM on all benchmarks
-WMS="lewm pldm" ./scripts/build_artifacts.sh
-# script also works for a specific model and benchmark pair
-./scripts/build_artifacts.sh lewm pusht
-```
-
-For each pair this runs three steps and writes to `artifacts/<wm>/<bench>/`:
-
-1. `scripts/build_bank.py` encodes every frame of the dataset with the frozen encoder.
-   - `bank_z.npy`: the latent of each frame (the graph's vertices).
-   - `bank_ep.npy`, `bank_st.npy`: the episode and step each frame comes from.
-2. `scripts/build_jump_table.py` finds, for every frame, its 4 nearest frames in other episodes.
-   - `jump_idx.npy`, `jump_dist.npy`: their indices and latent distances, nearest first.
-3. `scripts/calibrate_edge_cost.py` calibrates how a latent distance converts into frames.
-   - `edge_cost.npz`: the latent distance between two frames used to price the bridge edges.
-
-## 4. Running Metro-WM
-
-`h` is the micro planner horizon, `H` the waypoint budget, `T` the episode budget and `d` the goal offset distance (see the paper).
-
-```bash
-# Metro-LeWM on PushT, d=75 (best result in the paper)
-d=75
-for rs in 7 8 9; do
-  python eval.py --wm lewm --bench pusht --d $d --h 5 --H 28 --T $((4 * d)) --run_seed $rs
-done
-```
-
-Each run appends a row to `results/results.jsonl` with the per-episode outcomes, the frame of first success and the wall clock.
-To visualise the results, add `--save_video`.
-
-For convenience, we provide a script `reproduce.sh` to reproduce all Metro-WM results:
-
-```bash
-# Metro-LeWM only for d=75, the highest-budget cell of each benchmark's frontier
-./reproduce.sh
-# Metro-LeWM and Metro-PLDM for d=75, the highest-budget cell of each benchmark's frontier
-WMS="lewm pldm" ./reproduce.sh
-# every (h,H) cell of Metro-LeWM's pareto frontier for all d, as shown in Figure 3 of the paper
-# it reads off `configs/frontier.txt` from Appendix G.4 of the paper
-FRONTIER=1 D="25 50 75" ./reproduce.sh
-```
-
-Note that each cell runs once at the maximum budget `T = 4d`, and the success rate at every smaller budget on the frontier is read off that run.
-`reproduce.sh` prints these success rates when it finishes; to print them again from `results/results.jsonl`, run `python summarize.py` (or `python summarize.py --d 75` for d=75).
-
 ## Citation
 
 ```bibtex
@@ -187,4 +101,4 @@ Note that each cell runs once at the maximum budget `T = 4d`, and the success ra
 
 ## Credits
 
-This codebase is built on top of [LeWorldModel](https://github.com/lucas-maes/le-wm) and [stable-worldmodel](https://github.com/galilai-group/stable-worldmodel); both are MIT licensed. For further information, see `NOTICE` and `LICENSES/`.
+This codebase is built on top of [LeWorldModel](https://github.com/lucas-maes/le-wm) and [stable-worldmodel](https://github.com/galilai-group/stable-worldmodel); the [H-JEPA setup](docs/hjepa_setup.md) runs inside [H-JEPA](https://github.com/kevinghst/H-JEPA). All three are MIT licensed. For further information, see `NOTICE` and `LICENSES/`.

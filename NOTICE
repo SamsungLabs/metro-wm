@@ -14,3 +14,12 @@ stable-worldmodel (https://github.com/galilai-group/stable-worldmodel), Copyrigh
   - metro/policy.py: subclasses stable_worldmodel.policy.BasePolicy; its receding-horizon action
     buffer (set_env / get_action) is adapted from stable_worldmodel.policy.WorldModelPolicy.
   License: LICENSES/stable-worldmodel-LICENSE
+
+H-JEPA (https://github.com/kevinghst/H-JEPA), Copyright (c) 2026 Wancong Zhang, Basile Terver, Mike Rabbat,
+Yann LeCun, Randall Balestriero
+  - hjepa/metro_in_hjepa.py: subclasses H-JEPA's WorldModelPolicy and wraps its planning_eval.py policy
+    builder and gradient solver to run Metro inside H-JEPA's evaluation harness.
+  - hjepa/build_bank.py: encodes H-JEPA's AntMaze / FourRoom training data with H-JEPA's model, preprocessing
+    and training-subset selection.
+  - scripts/convert_hjepa.py: maps H-JEPA's flat LeWM checkpoint onto jepa.JEPA.
+  License: LICENSES/H-JEPA-LICENSE

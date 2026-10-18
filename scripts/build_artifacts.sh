@@ -2,7 +2,7 @@
 # Steps 1-2 for every (world model, benchmark): state bank, jump table, bridge-cost curve.
 #
 #   ./scripts/build_artifacts.sh                 # LeWM on all 4 benchmarks, one per GPU
-#   WMS="lewm pldm" ./scripts/build_artifacts.sh # also PLDM (needs its weights, see README)
+#   WMS="lewm pldm" ./scripts/build_artifacts.sh # also PLDM (needs its weights, see docs/lewm_setup.md)
 #   ./scripts/build_artifacts.sh lewm pusht      # one
 set -euo pipefail
 cd "$(dirname "$0")/.."

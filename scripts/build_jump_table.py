@@ -19,8 +19,8 @@ REPO = Path(__file__).resolve().parent.parent
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--wm", default="lewm", choices=["lewm", "pldm"])
-    ap.add_argument("--bench", required=True, choices=["pusht", "cube", "tworoom", "reacher"])
+    ap.add_argument("--wm", default="lewm", help="checkpoint $STABLEWM_HOME/<bench>/<wm>_object.ckpt")
+    ap.add_argument("--bench", required=True, choices=["pusht", "cube", "tworoom", "reacher", "ant", "fourroom"])
     ap.add_argument("--artifacts", default=str(REPO / "artifacts"))
     ap.add_argument("--k_search", type=int, default=32, help="neighbours searched per frame")
     ap.add_argument("--k_edges", type=int, default=4, help="nearest of them written, <= k_search")

@@ -1,6 +1,6 @@
 # Metro-WM: H-JEPA setup (gradient planner)
 
-This setup runs Metro-WM inside the evaluation of H-JEPA and compares Metro-WM with H-JEPA and HWM on OGBench Cube, Push-T, Visual AntMaze and FourRoom Distractors using a gradient planner.
+This setup runs Metro-WM inside the evaluation of H-JEPA and compares Metro-WM with H-JEPA and HWM on OGBench Cube, PushT, Visual AntMaze and FourRoom Distractors using a gradient planner.
 
 ## 1. Installation
 

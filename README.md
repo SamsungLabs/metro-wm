@@ -4,7 +4,7 @@
   <a href="https://arxiv.org/abs/2609.31868">Paper (arXiv:2609.31868)</a> | <a href="#getting-started">Getting started</a> | <a href="#citation">Citation</a>
 </p>
 
-Metro-WM is a hierarchical planner for JEPA world models. Instead of generating latent sub-goals, which are often physically unrealisable, it retrieves real frames from offline data as sub-goals. It does this by routing over a graph of recorded frames that stitches episodes together.
+Metro-WM is a training-free hierarchical planner for JEPA world models. Instead of generating latent sub-goals, which are often physically unrealisable, it retrieves real frames from offline data as sub-goals. It does this by routing over a graph of recorded frames that stitches episodes together.
 
 ## News
 
@@ -16,7 +16,7 @@ Metro-WM is a hierarchical planner for JEPA world models. Instead of generating 
 
 ### Comparisons with H-JEPA and HWM (Gradient planner)
 
-In the setup of [H-JEPA](https://github.com/kevinghst/H-JEPA) (their checkpoints, gradient-descent planner, tasks and evaluation code), Metro-WM guides their flat LeWM and achieves the highest mean success on all four benchmarks. Mean ± standard error over H-JEPA's model seeds 42/43/44.
+In the setup of [H-JEPA](https://github.com/kevinghst/H-JEPA) (their checkpoints, gradient-descent planner, tasks and evaluation code), Metro-WM guides their flat LeWM and achieves the highest mean success on all four benchmarks. Mean ± standard deviation over H-JEPA's model seeds 42/43/44.
 To reproduce, see the [H-JEPA setup](docs/hjepa_setup.md).
 
 <p align="center">
@@ -31,8 +31,11 @@ To reproduce, see the [H-JEPA setup](docs/hjepa_setup.md).
 <summary>More examples</summary>
 
 <p align="center">
-  <img src="assets/hjepa_pusht_example.gif" width="100%" alt="Push-T: HWM 2 and H-JEPA 2 miss the goal, Metro-LeWM reaches it">
+  <img src="assets/hjepa_ant_example2.gif" width="100%" alt="Visual AntMaze: Metro-LeWM reaches the goal first">
+  <img src="assets/hjepa_pusht_example.gif" width="100%" alt="PushT: HWM 2 and H-JEPA 2 miss the goal, Metro-LeWM reaches it">
+  <img src="assets/hjepa_pusht_example2.gif" width="100%" alt="PushT: Metro-LeWM reaches the goal first">
   <img src="assets/hjepa_fourroom_example.gif" width="100%" alt="FourRoom: HWM 3 and H-JEPA 3 miss the goal, Metro-LeWM reaches it">
+  <img src="assets/hjepa_fourroom_example2.gif" width="100%" alt="FourRoom: Metro-LeWM reaches the goal first">
 </p>
 
 </details>
@@ -56,9 +59,12 @@ To reproduce, see the [LeWM setup](docs/lewm_setup.md).
 <summary>More examples</summary>
 
 <p align="center">
+  <img src="assets/pusht_example2.gif" width="100%" alt="PushT: Metro-LeWM reaches the goal first">
   <img src="assets/cube_example.gif" width="100%" alt="Cube: LeWM and Hi-LeWM-C miss the goal, Metro-LeWM reaches it">
   <img src="assets/reacher_example.gif" width="100%" alt="Reacher: LeWM and Hi-LeWM-C miss the goal, Metro-LeWM reaches it">
+  <img src="assets/reacher_example2.gif" width="100%" alt="Reacher: Metro-LeWM reaches the goal first">
   <img src="assets/tworoom_example.gif" width="100%" alt="TwoRoom: LeWM and Hi-LeWM-C miss the goal, Metro-LeWM reaches it">
+  <img src="assets/tworoom_example2.gif" width="100%" alt="TwoRoom: Metro-LeWM reaches the goal first">
 </p>
 
 </details>
@@ -70,7 +76,7 @@ Each setup has its own standalone guide covering installation, data and models, 
 
 | Setup | Planner | Benchmarks | Guide |
 |---|---|---|---|
-| H-JEPA | Gradient descent | OGBench Cube, Push-T, Visual AntMaze, FourRoom | [docs/hjepa_setup.md](docs/hjepa_setup.md) |
+| H-JEPA | Gradient descent | Cube, PushT, AntMaze, FourRoom | [docs/hjepa_setup.md](docs/hjepa_setup.md) |
 | LeWM | CEM | PushT, Cube, TwoRoom, Reacher | [docs/lewm_setup.md](docs/lewm_setup.md) |
 
 ## Method
@@ -78,7 +84,8 @@ Each setup has its own standalone guide covering installation, data and models, 
 <details>
 <summary>Abstract</summary>
 
-Model-predictive control with Joint-Embedding Predictive Architectures (JEPAs) provides a strong zero-shot goal-reaching planner, but it is only effective over short planning horizons. Hierarchical extensions attempt to bridge this gap by learning a macro planner to predict intermediate latent sub-goals to guide the micro planner. In this work, we demonstrate that unconstrained latent sub-goal prediction is fundamentally flawed. A rigorous evaluation reveals that a leading state-of-the-art macro planner routinely emits physically unrealisable sub-goals. To resolve this, we introduce Metro-WM, a hierarchical framework that issues sub-goals by retrieving genuine states from prior experience rather than generating ungrounded latent vectors. Specifically, Metro-WM constructs a graph whose vertices are observed frames from offline expert demonstrations or random-action trajectories, allowing frames from different episodes to be connected and stitched into routes to the goal. Planning over the full graph also makes the system highly robust to execution errors: if the micro planner drifts off course, Metro-WM instantly finds a new optimal path from the current state. Our experiments show that Metro-WM achieves superior long-horizon success rates of up to 37.33 percentage points over the next best hierarchical approach while being up to 10.9 times faster, requiring both 13-56 times less offline compute and fewer tuned hyperparameters. Additional analysis reveals that Metro-WM finds shorter paths than the offline demonstrations, outperforms an oracle relying on the query's own demonstration, and maintains robust performance under extremely sparse dataset conditions.
+Model-predictive control with Joint-Embedding Predictive Architectures (JEPAs) provides a strong zero-shot goal-reaching planner, but it is only effective over short planning horizons. Hierarchical extensions attempt to bridge this gap by learning a macro planner to predict intermediate latent sub-goals to guide the micro planner. In this work, we demonstrate that unconstrained latent sub-goal prediction is fundamentally flawed. A rigorous evaluation reveals that leading hierarchical macro
+planners routinely emit physically unrealisable sub-goals. To resolve this, we introduce Metro-WM, a hierarchical framework that issues sub-goals by retrieving genuine states from prior experience rather than generating ungrounded latent vectors. Specifically, Metro-WM constructs a graph whose vertices are observed frames from offline expert demonstrations or random-action trajectories, allowing frames from different episodes to be connected and stitched into routes to the goal. Planning over the full graph also makes the system highly robust to execution errors: if the micro planner drifts off course, Metro-WM instantly finds a new optimal path from the current state. Our experiments show that Metro-WM achieves superior long-horizon success rates of up to 37.33 percentage points over the strongest hierarchical baseline on the same world model while being up to 10.9 times faster, requiring both 13-56 times less offline compute and fewer tuned hyperparameters. Additional analysis reveals that Metro-WM frequently finds shorter paths than the offline demonstrations, outperforms an oracle relying on the query's own demonstration on most benchmarks, and maintains robust performance under extremely sparse dataset conditions.
 
 </details>
 

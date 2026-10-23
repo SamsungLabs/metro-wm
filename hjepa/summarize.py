@@ -1,4 +1,4 @@
-"""Success rates of hjepa/reproduce.sh: mean ± standard error over seeds 42/43/44 (H-JEPA's convention).
+"""Success rates of hjepa/reproduce.sh: mean ± standard deviation over seeds 42/43/44.
 
     python hjepa/summarize.py
 """
@@ -21,13 +21,13 @@ def success(bench, h, H, seed):
 
 
 def main():
-    print("| benchmark | h | H | " + " | ".join(f"seed {s}" for s in SEEDS) + " | mean ± SE |")
+    print("| benchmark | h | H | " + " | ".join(f"seed {s}" for s in SEEDS) + " | mean ± SD |")
     print("|---|---|---|" + "---|" * len(SEEDS) + "---|")
     for bench, (h, H) in CELLS.items():
         r = [success(bench, h, H, s) for s in SEEDS]
         done = [x for x in r if x is not None]
-        se = np.std(done, ddof=1) / np.sqrt(len(done)) if len(done) > 1 else float("nan")
-        mean = f"{np.mean(done):.1f} ± {se:.1f}" + ("" if len(done) == len(SEEDS) else f" (n={len(done)})") if done else "—"
+        sd = np.std(done, ddof=1) if len(done) > 1 else float("nan")
+        mean = f"{np.mean(done):.1f} ± {sd:.1f}" + ("" if len(done) == len(SEEDS) else f" (n={len(done)})") if done else "—"
         print(f"| {bench} | {h} | {H} | " + " | ".join("—" if x is None else f"{x:.0f}" for x in r) + f" | {mean} |")
 
 

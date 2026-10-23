@@ -1,7 +1,7 @@
 # Metro-WM: Long-Horizon Latent Planning with Realisable Sub-Goals
 
 <p align="center">
-  <a href="https://arxiv.org/abs/2609.31868">Paper (arXiv:2609.31868)</a> | <a href="#citation">Citation</a>
+  <a href="https://arxiv.org/abs/2609.31868">Paper (arXiv:2609.31868)</a> | <a href="#getting-started">Getting started</a> | <a href="#citation">Citation</a>
 </p>
 
 Metro-WM is a hierarchical planner for JEPA world models. Instead of generating latent sub-goals, which are often physically unrealisable, it retrieves real frames from offline data as sub-goals. It does this by routing over a graph of recorded frames that stitches episodes together.
@@ -63,6 +63,15 @@ To reproduce, see the [LeWM setup](docs/lewm_setup.md).
 
 </details>
 
+
+## Getting started
+
+Each setup has its own standalone guide covering installation, data and models, building the graph and running Metro-WM.
+
+| Setup | Planner | Benchmarks | Guide |
+|---|---|---|---|
+| H-JEPA | Gradient descent | OGBench Cube, Push-T, Visual AntMaze, FourRoom | [docs/hjepa_setup.md](docs/hjepa_setup.md) |
+| LeWM | CEM | PushT, Cube, TwoRoom, Reacher | [docs/lewm_setup.md](docs/lewm_setup.md) |
 
 ## Method
 

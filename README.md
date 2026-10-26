@@ -8,7 +8,8 @@ Metro-WM is a training-free hierarchical planner for JEPA world models. Instead 
 
 ## News
 
-- **18 Oct 2026**: Added [comparisons with H-JEPA and HWM](#comparisons-with-h-jepa-and-hwm-gradient-planner) in their evaluation setup. We will update the paper soon.
+- **26 Oct 2026**: Updated paper on [arXiv](https://arxiv.org/abs/2609.31868), now including the comparisons with H-JEPA and HWM.
+- **18 Oct 2026**: Added [comparisons with H-JEPA and HWM](#comparisons-with-h-jepa-and-hwm-gradient-planner) in their evaluation setup.
 - **16 Oct 2026**: Code released.
 - **25 Sep 2026**: Paper released on [arXiv](https://arxiv.org/abs/2609.31868).
 
